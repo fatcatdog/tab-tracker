@@ -14,14 +14,32 @@
 
         <v-btn
           dark
-          class="cyan"
-          @click="navigateTo({
+          class="light-green"
+          :to="{
             name: 'song-edit',
-            params: {
-              songId: song.id
+            params () {
+              return {
+                songId: song.id
+              }
             }
-          })">
+          }">
           Edit
+        </v-btn>
+
+        <v-btn
+          v-if="isUserLoggedIn && !bookmark"
+          dark
+          class="light-green"
+          @click="setAsBookmark">
+          Set As Bookmark
+        </v-btn>
+
+        <v-btn
+          v-if="isUserLoggedIn && bookmark"
+          dark
+          class="light-green"
+          @click="unsetAsBookmark">
+          Unset Bookmark
         </v-btn>
       </v-flex>
 
@@ -35,18 +53,56 @@
 </template>
 
 <script>
-import Panel from '@/components/Panel'
+import {mapState} from 'vuex'
+import BookmarksService from '@/services/BookmarksService'
 export default {
   props: [
     'song'
   ],
-  methods: {
-    navigateTo (route) {
-      this.$router.push(route)
+  data () {
+    return {
+      bookmark: null
     }
   },
-  components: {
-    Panel
+  computed: {
+    ...mapState([
+      'isUserLoggedIn'
+    ])
+  },
+  watch: {
+    async song () {
+      if (!this.isUserLoggedIn) {
+        return
+      }
+      try {
+        this.bookmark = (await BookmarksService.index({
+          songId: this.song.id,
+          userId: this.$store.state.user.id
+        })).data
+      } catch (err) {
+        console.log(err)
+      }
+    }
+  },
+  methods: {
+    async setAsBookmark () {
+      try {
+        this.bookmark = (await BookmarksService.post({
+          songId: this.song.id,
+          userId: this.$store.state.user.id
+        })).data
+      } catch (err) {
+        console.log(err)
+      }
+    },
+    async unsetAsBookmark () {
+      try {
+        await BookmarksService.delete(this.bookmark.id)
+        this.bookmark = null
+      } catch (err) {
+        console.log(err)
+      }
+    }
   }
 }
 </script>
