@@ -5,8 +5,10 @@ Build with the guidance of FreeCodeCamp's Cody Seibert.
 
 To run: 
 
-npm install
+cd client 
+npm install 
+npm start 
 
-enter the client's directory to npm start 
-
-enter the server's directory to npm start 
+cd server 
+npm install 
+npm start 
